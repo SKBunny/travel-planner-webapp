@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Головна - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center py-5">
+    <h1 class="display-4">Плануйте свої подорожі легко</h1>
+    <p class="lead">Всі ваші поїздки в одному місці</p>
+    {% if not current_user.is_authenticated %}
+        <div class="mt-4">
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Розпочати</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Увійти</a>
+        </div>
+    {% else %}
+        <div class="mt-4">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Мої поїздки</a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 text-center mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3>📅 Планування</h3>
+                <p>Створюйте детальні маршрути та плануйте кожен день</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3>💰 Бюджет</h3>
+                <p>Контролюйте витрати та дотримуйтесь бюджету</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3>👥 Спільно</h3>
+                <p>Плануйте поїздки разом з друзями</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

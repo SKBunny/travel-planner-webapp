@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ trip.title }} - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">← Назад до поїздок</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>{{ trip.title }}</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Напрямок:</strong> {{ trip.destination }}</p>
+                <p><strong>Дата початку:</strong> {{ trip.start_date.strftime('%d.%m.%Y') }}</p>
+                <p><strong>Дата закінчення:</strong> {{ trip.end_date.strftime('%d.%m.%Y') }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Бюджет:</strong> {{ trip.budget }} грн</p>
+                <p><strong>Створено:</strong> {{ trip.created_at.strftime('%d.%m.%Y') }}</p>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <h4>Планування</h4>
+        <p class="text-muted">Тут буде детальний план поїздки (додамо пізніше)</p>
+    </div>
+</div>
+{% endblock %}
