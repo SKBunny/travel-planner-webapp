@@ -140,11 +140,34 @@ def dashboard():
 @login_required
 def new_trip():
     if request.method == 'POST':
-        title = request.form.get('title')
-        destination = request.form.get('destination')
-        start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d')
-        end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d')
-        budget = float(request.form.get('budget', 0))
+        title = request.form.get('title', '').strip()
+        destination = request.form.get('destination', '').strip()
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        budget_str = request.form.get('budget', '0')
+
+        # Серверна валідація
+        if not title or not destination:
+            flash('Назва та напрямок є обов\'язковими полями', 'danger')
+            return render_template('trip.html')
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+
+            # Перевірка логічності дат
+            if end_date < start_date:
+                flash('Дата закінчення не може бути раніше дати початку', 'danger')
+                return render_template('trip.html')
+
+            budget = float(budget_str)
+            if budget < 0:
+                flash('Бюджет не може бути від\'ємним', 'danger')
+                return render_template('trip.html')
+
+        except ValueError:
+            flash('Невірний формат дати або бюджету', 'danger')
+            return render_template('trip.html')
 
         new_trip = Trip(
             title=title,
