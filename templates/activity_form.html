@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if activity %}Редагувати активність{% else %}Нова активність{% endif %} - Travel Planner
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="mb-3">
+            <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+                ← Назад до поїздки
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">
+                    {% if activity %}
+                        Редагувати активність
+                    {% else %}
+                        Додати нову активність
+                    {% endif %}
+                </h2>
+                <p class="text-muted">Поїздка: <strong>{{ trip.title }}</strong></p>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Назва активності *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{% if activity %}{{ activity.title }}{% endif %}" 
+                               placeholder="Наприклад: Відвідування Ейфелевої вежі" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Опис</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="Додаткова інформація про активність...">{% if activity %}{{ activity.description }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date" class="form-label">Дата *</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{% if activity %}{{ activity.date.strftime('%Y-%m-%d') }}{% endif %}"
+                                   min="{{ trip.start_date.strftime('%Y-%m-%d') }}"
+                                   max="{{ trip.end_date.strftime('%Y-%m-%d') }}" required>
+                            <small class="text-muted">Від {{ trip.start_date.strftime('%d.%m.%Y') }} до {{ trip.end_date.strftime('%d.%m.%Y') }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="time" class="form-label">Час</label>
+                            <input type="time" class="form-control" id="time" name="time" 
+                                   value="{% if activity %}{{ activity.time }}{% endif %}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Локація</label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               value="{% if activity %}{{ activity.location }}{% endif %}" 
+                               placeholder="Місце проведення активності">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Категорія</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="general" {% if activity and activity.category == 'general' %}selected{% endif %}>
+                                    🎯 Загальне
+                                </option>
+                                <option value="transport" {% if activity and activity.category == 'transport' %}selected{% endif %}>
+                                    🚗 Транспорт
+                                </option>
+                                <option value="food" {% if activity and activity.category == 'food' %}selected{% endif %}>
+                                    🍽️ Їжа
+                                </option>
+                                <option value="activity" {% if activity and activity.category == 'activity' %}selected{% endif %}>
+                                    🎡 Розваги
+                                </option>
+                                <option value="accommodation" {% if activity and activity.category == 'accommodation' %}selected{% endif %}>
+                                    🏨 Проживання
+                                </option>
+                                <option value="shopping" {% if activity and activity.category == 'shopping' %}selected{% endif %}>
+                                    🛍️ Покупки
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cost" class="form-label">Вартість (грн)</label>
+                            <input type="number" class="form-control" id="cost" name="cost" 
+                                   step="0.01" value="{% if activity %}{{ activity.cost }}{% else %}0{% endif %}">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {% if activity %}Зберегти зміни{% else %}Додати активність{% endif %}
+                        </button>
+                        <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+                            Скасувати
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Редагувати поїздку - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="card-title mb-0">Редагувати поїздку</h2>
+                    <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+                        Скасувати
+                    </a>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Назва поїздки</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ trip.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="destination" class="form-label">Напрямок</label>
+                        <input type="text" class="form-control" id="destination" name="destination" 
+                               value="{{ trip.destination }}" placeholder="Наприклад: Париж, Франція" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">Дата початку</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" 
+                                   value="{{ trip.start_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">Дата закінчення</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" 
+                                   value="{{ trip.end_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="budget" class="form-label">Бюджет (грн)</label>
+                        <input type="number" class="form-control" id="budget" name="budget" 
+                               step="0.01" value="{{ trip.budget }}">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

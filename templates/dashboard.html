@@ -4,31 +4,67 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Мої поїздки</h2>
-    <a href="{{ url_for('new_trip') }}" class="btn btn-primary">+ Нова поїздка</a>
+    <div>
+        <h2>Мої поїздки</h2>
+        <p class="text-muted">Вітаємо, {{ current_user.username }}! 👋</p>
+    </div>
+    <a href="{{ url_for('new_trip') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle"></i> Нова поїздка
+    </a>
 </div>
 
 {% if trips %}
     <div class="row">
         {% for trip in trips %}
-        <div class="col-md-6 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 trip-card">
                 <div class="card-body">
                     <h5 class="card-title">{{ trip.title }}</h5>
-                    <p class="card-text">
-                        <strong>Напрямок:</strong> {{ trip.destination }}<br>
-                        <strong>Дати:</strong> {{ trip.start_date.strftime('%d.%m.%Y') }} - {{ trip.end_date.strftime('%d.%m.%Y') }}<br>
-                        <strong>Бюджет:</strong> {{ trip.budget }} грн
-                    </p>
-                    <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-sm btn-outline-primary">Переглянути</a>
+                    <h6 class="card-subtitle mb-3 text-muted">
+                        <i class="bi bi-geo-alt"></i> {{ trip.destination }}
+                    </h6>
+
+                    <div class="trip-info">
+                        <p class="mb-2">
+                            <i class="bi bi-calendar-range"></i>
+                            <small>{{ trip.start_date.strftime('%d.%m.%Y') }} - {{ trip.end_date.strftime('%d.%m.%Y') }}</small>
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-hourglass-split"></i>
+                            <small>{{ (trip.end_date - trip.start_date).days + 1 }} днів</small>
+                        </p>
+                        <p class="mb-3">
+                            <i class="bi bi-wallet2"></i>
+                            <strong>{{ "%.0f"|format(trip.budget) }} грн</strong>
+                        </p>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-sm btn-primary flex-grow-1">
+                            Переглянути
+                        </a>
+                        <a href="{{ url_for('edit_trip', trip_id=trip.id) }}" class="btn btn-sm btn-outline-warning">
+                            ✏️
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Створено: {{ trip.created_at.strftime('%d.%m.%Y') }}</small>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 {% else %}
-    <div class="alert alert-info">
-        У вас поки немає поїздок. Створіть свою першу поїздку!
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-suitcase" style="font-size: 4rem; color: #ccc;"></i>
+        </div>
+        <h3 class="text-muted">У вас поки немає поїздок</h3>
+        <p class="text-muted mb-4">Створіть свою першу подорож і почніть планування!</p>
+        <a href="{{ url_for('new_trip') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Створити першу поїздку
+        </a>
     </div>
 {% endif %}
 {% endblock %}
