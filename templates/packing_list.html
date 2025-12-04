@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Список речей - {{ trip.title }} - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад до поїздки
+        </a>
+    </div>
+    <div>
+        {% if packed_items > 0 %}
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearPackedModal">
+                <i class="bi bi-trash"></i> Очистити зібране
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Header Card -->
+<div class="card shadow-sm mb-4 packing-header-card">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">
+                    <i class="bi bi-suitcase-lg packing-icon"></i>
+                    Список речей для подорожі
+                </h2>
+                <p class="text-muted mb-0">{{ trip.title }} • {{ trip.destination }}</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="packing-stats">
+                    <h3 class="mb-0">{{ packed_items }}/{{ total_items }}</h3>
+                    <p class="text-muted mb-0">Зібрано</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Прогрес збирання</h5>
+            <strong class="{% if packing_progress == 100 %}text-success{% else %}text-primary{% endif %}">
+                {{ "%.0f"|format(packing_progress) }}%
+            </strong>
+        </div>
+        <div class="progress packing-progress" style="height: 25px;">
+            <div class="progress-bar {% if packing_progress == 100 %}bg-success{% else %}bg-gradient-primary{% endif %}" 
+                 role="progressbar" 
+                 style="width: {{ packing_progress }}%">
+                {% if packing_progress == 100 %}
+                    <i class="bi bi-check-circle-fill"></i> Готово!
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Швидке додавання</h5>
+        <form method="POST" action="{{ url_for('add_packing_item', trip_id=trip.id) }}" class="row g-3">
+            <div class="col-md-5">
+                <input type="text" class="form-control" name="name" placeholder="Назва речі..." required>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="category">
+                    <option value="clothes">👕 Одяг</option>
+                    <option value="toiletries">🧴 Туалетні речі</option>
+                    <option value="electronics">📱 Електроніка</option>
+                    <option value="documents">📄 Документи</option>
+                    <option value="other">📦 Інше</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="quantity" value="1" min="1" placeholder="К-ть">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-lg"></i> Додати
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Packing List by Categories -->
+{% set category_config = [
+    ('clothes', '👕 Одяг', 'primary'),
+    ('toiletries', '🧴 Туалетні речі', 'info'),
+    ('electronics', '📱 Електроніка', 'warning'),
+    ('documents', '📄 Документи', 'danger'),
+    ('other', '📦 Інше', 'secondary')
+] %}
+
+<div class="row">
+    {% for cat_key, cat_name, cat_color in category_config %}
+        {% set items = items_by_category[cat_key] %}
+        {% if items %}
+            <div class="col-lg-6 mb-4">
+                <div class="card packing-category-card h-100">
+                    <div class="card-header bg-{{ cat_color }} text-white">
+                        <h5 class="mb-0">{{ cat_name }} ({{ items|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="packing-item-list">
+                            {% for item in items %}
+                                <li class="packing-item {% if item.is_packed %}packed{% endif %}">
+                                    <div class="packing-item-content">
+                                        <form method="POST" action="{{ url_for('toggle_packing_item', trip_id=trip.id, item_id=item.id) }}" class="d-inline">
+                                            <button type="submit" class="packing-checkbox">
+                                                {% if item.is_packed %}
+                                                    <i class="bi bi-check-square-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-square"></i>
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                        
+                                        <div class="packing-item-info">
+                                            <span class="packing-item-name">{{ item.name }}</span>
+                                            {% if item.quantity > 1 %}
+                                                <span class="badge bg-secondary">x{{ item.quantity }}</span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <form method="POST" action="{{ url_for('delete_packing_item', trip_id=trip.id, item_id=item.id) }}" class="d-inline">
+                                            <button type="submit" class="packing-delete-btn" onclick="return confirm('Видалити цю річ?')">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+{% if total_items == 0 %}
+    <div class="text-center py-5">
+        <div class="empty-state">
+            <i class="bi bi-inbox" style="font-size: 5rem; color: #cbd5e0;"></i>
+            <h3 class="mt-4 text-muted">Список порожній</h3>
+            <p class="text-muted mb-4">Почніть додавати речі, які потрібно взяти з собою!</p>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Modal для очищення зібраних речей -->
+<div class="modal fade" id="clearPackedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Очистити зібрані речі?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Видалити всі зібрані речі зі списку? Це допоможе очистити список після подорожі.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <form method="POST" action="{{ url_for('clear_packed_items', trip_id=trip.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Так, очистити</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

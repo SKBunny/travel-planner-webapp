@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if accommodation %}Редагувати готель{% else %}Додати готель{% endif %} - Travel Planner
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('accommodations_list', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад до списку
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-building"></i>
+                    {% if accommodation %}Редагувати готель{% else %}Додати новий готель{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <!-- Основна інформація -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-info-circle"></i> Основна інформація
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-8 mb-3">
+                            <label for="name" class="form-label">Назва готелю *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{% if accommodation %}{{ accommodation.name }}{% endif %}" 
+                                   placeholder="Наприклад: Hotel Plaza" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="rating" class="form-label">Рейтинг</label>
+                            <select class="form-select" id="rating" name="rating">
+                                <option value="0" {% if accommodation and accommodation.rating == 0 %}selected{% endif %}>Без рейтингу</option>
+                                <option value="1" {% if accommodation and accommodation.rating == 1 %}selected{% endif %}>⭐</option>
+                                <option value="2" {% if accommodation and accommodation.rating == 2 %}selected{% endif %}>⭐⭐</option>
+                                <option value="3" {% if accommodation and accommodation.rating == 3 %}selected{% endif %}>⭐⭐⭐</option>
+                                <option value="4" {% if accommodation and accommodation.rating == 4 %}selected{% endif %}>⭐⭐⭐⭐</option>
+                                <option value="5" {% if accommodation and accommodation.rating == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="address" class="form-label">Адреса</label>
+                            <input type="text" class="form-control" id="address" name="address" 
+                                   value="{% if accommodation %}{{ accommodation.address }}{% endif %}" 
+                                   placeholder="вул. Хрещатик, 1, Київ">
+                        </div>
+                    </div>
+                    
+                    <!-- Дати -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-calendar-range"></i> Дати проживання
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="check_in" class="form-label">Дата заїзду *</label>
+                            <input type="date" class="form-control" id="check_in" name="check_in" 
+                                   value="{% if accommodation %}{{ accommodation.check_in.strftime('%Y-%m-%d') }}{% endif %}"
+                                   min="{{ trip.start_date.strftime('%Y-%m-%d') }}"
+                                   max="{{ trip.end_date.strftime('%Y-%m-%d') }}" required>
+                            <small class="text-muted">Зазвичай з 14:00</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="check_out" class="form-label">Дата виїзду *</label>
+                            <input type="date" class="form-control" id="check_out" name="check_out" 
+                                   value="{% if accommodation %}{{ accommodation.check_out.strftime('%Y-%m-%d') }}{% endif %}"
+                                   min="{{ trip.start_date.strftime('%Y-%m-%d') }}"
+                                   max="{{ trip.end_date.strftime('%Y-%m-%d') }}" required>
+                            <small class="text-muted">Зазвичай до 12:00</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Вартість -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-cash-stack"></i> Вартість
+                            </h5>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="price_per_night" class="form-label">Ціна за ніч (грн)</label>
+                            <input type="number" class="form-control" id="price_per_night" name="price_per_night"
+                                   value="{% if accommodation %}{{ accommodation.price_per_night }}{% else %}0{% endif %}"
+                                   step="0.01" min="0">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="booking_status" class="form-label">Статус бронювання</label>
+                            <select class="form-select" id="booking_status" name="booking_status">
+                                <option value="pending" {% if accommodation and accommodation.booking_status == 'pending' %}selected{% endif %}>
+                                    ⏳ В очікуванні
+                                </option>
+                                <option value="confirmed" {% if accommodation and accommodation.booking_status == 'confirmed' %}selected{% endif %}>
+                                    ✓ Підтверджено
+                                </option>
+                                <option value="cancelled" {% if accommodation and accommodation.booking_status == 'cancelled' %}selected{% endif %}>
+                                    ✗ Скасовано
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Контакти та бронювання -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-telephone"></i> Контакти та деталі бронювання
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="booking_reference" class="form-label">Номер бронювання</label>
+                            <input type="text" class="form-control" id="booking_reference" name="booking_reference" 
+                                   value="{% if accommodation %}{{ accommodation.booking_reference }}{% endif %}" 
+                                   placeholder="BK-123456">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{% if accommodation %}{{ accommodation.phone }}{% endif %}" 
+                                   placeholder="+380 44 123 4567">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{% if accommodation %}{{ accommodation.email }}{% endif %}" 
+                                   placeholder="booking@hotel.com">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="website" class="form-label">Веб-сайт</label>
+                            <input type="url" class="form-control" id="website" name="website" 
+                                   value="{% if accommodation %}{{ accommodation.website }}{% endif %}" 
+                                   placeholder="https://hotel.com">
+                        </div>
+                    </div>
+                    
+                    <!-- Додаткова інформація -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-star"></i> Додаткова інформація
+                            </h5>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="amenities" class="form-label">Зручності (через кому)</label>
+                            <input type="text" class="form-control" id="amenities" name="amenities" 
+                                   value="{% if accommodation %}{{ accommodation.amenities }}{% endif %}" 
+                                   placeholder="WiFi, Басейн, Сніданок, Паркінг, Кондиціонер">
+                            <small class="text-muted">Наприклад: WiFi, Басейн, Сніданок, Паркінг</small>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="image_url" class="form-label">URL фото готелю</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" 
+                                   value="{% if accommodation %}{{ accommodation.image_url }}{% endif %}" 
+                                   placeholder="https://example.com/hotel-image.jpg">
+                            <small class="text-muted">Посилання на зображення готелю</small>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="notes" class="form-label">Нотатки</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Додаткові нотатки про готель...">{% if accommodation %}{{ accommodation.notes }}{% endif %}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопки -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-save"></i>
+                            {% if accommodation %}Зберегти зміни{% else %}Додати готель{% endif %}
+                        </button>
+                        <a href="{{ url_for('accommodations_list', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+                            Скасувати
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Валідація дат
+document.getElementById('check_in').addEventListener('change', function() {
+    document.getElementById('check_out').min = this.value;
+});
+</script>
+
+{% endblock %}

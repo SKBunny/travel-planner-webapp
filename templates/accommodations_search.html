@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Пошук готелів - {{ trip.title }} - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('accommodations_list', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад до списку
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-info text-white">
+        <h4 class="mb-0">
+            <i class="bi bi-search"></i> Пошук готелів
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="search-form-wrapper">
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-4">
+                    <label for="destination" class="form-label">Напрямок</label>
+                    <input type="text" class="form-control" id="destination"
+                           value="{{ trip.destination }}" placeholder="Місто або країна">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="checkin" class="form-label">Заїзд</label>
+                    <input type="date" class="form-control" id="checkin"
+                           value="{{ trip.start_date.strftime('%Y-%m-%d') }}">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="checkout" class="form-label">Виїзд</label>
+                    <input type="date" class="form-control" id="checkout"
+                           value="{{ trip.end_date.strftime('%Y-%m-%d') }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="guests" class="form-label">Гості</label>
+                    <select class="form-select" id="guests">
+                        <option value="1">1 гість</option>
+                        <option value="2" selected>2 гості</option>
+                        <option value="3">3 гості</option>
+                        <option value="4">4 гості</option>
+                        <option value="5">5+ гостей</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search"></i> Шукати готелі
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Результати пошуку -->
+<div id="searchResults" class="d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Знайдено готелів: <span id="resultsCount">0</span></h5>
+        <select class="form-select w-auto" id="sortBy">
+            <option value="price">За ціною</option>
+            <option value="rating">За рейтингом</option>
+            <option value="name">За назвою</option>
+        </select>
+    </div>
+
+    <div id="hotelsList" class="row">
+        <!-- Тут будуть результати пошуку -->
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loadingSpinner" class="text-center py-5 d-none">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Завантаження...</span>
+    </div>
+    <p class="mt-3 text-muted">Шукаємо найкращі готелі...</p>
+</div>
+
+<!-- Empty State -->
+<div id="emptyState" class="text-center py-5">
+    <i class="bi bi-search" style="font-size: 5rem; color: #cbd5e0;"></i>
+    <h3 class="mt-4 text-muted">Почніть пошук готелів</h3>
+    <p class="text-muted">Введіть дані та натисніть "Шукати готелі"</p>
+</div>
+
+<!-- Популярні варіанти (демо дані) -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-stars"></i> Популярні сервіси бронювання</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3 mb-3">
+                <a href="https://www.booking.com" target="_blank" class="booking-service-link">
+                    <div class="booking-service-card">
+                        <i class="bi bi-building" style="font-size: 2.5rem; color: #003580;"></i>
+                        <h6 class="mt-2">Booking.com</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="https://www.airbnb.com" target="_blank" class="booking-service-link">
+                    <div class="booking-service-card">
+                        <i class="bi bi-house-heart" style="font-size: 2.5rem; color: #FF5A5F;"></i>
+                        <h6 class="mt-2">Airbnb</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="https://www.hotels.com" target="_blank" class="booking-service-link">
+                    <div class="booking-service-card">
+                        <i class="bi bi-building-check" style="font-size: 2.5rem; color: #D32F2F;"></i>
+                        <h6 class="mt-2">Hotels.com</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="https://www.expedia.com" target="_blank" class="booking-service-link">
+                    <div class="booking-service-card">
+                        <i class="bi bi-airplane" style="font-size: 2.5rem; color: #00355F;"></i>
+                        <h6 class="mt-2">Expedia</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <p class="text-center text-muted mb-0">
+            <small>Після знаходження готелю на цих сервісах, ви можете додати його в свій план подорожі</small>
+        </p>
+    </div>
+</div>
+
+<script>
+// Демо пошук (без реального API)
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Показуємо спінер
+    document.getElementById('loadingSpinner').classList.remove('d-none');
+    document.getElementById('emptyState').classList.add('d-none');
+    document.getElementById('searchResults').classList.add('d-none');
+
+    // Симулюємо запит до API
+    setTimeout(() => {
+        document.getElementById('loadingSpinner').classList.add('d-none');
+        document.getElementById('searchResults').classList.remove('d-none');
+
+        // Демо результати
+        const demoHotels = [
+            {
+                name: 'Grand Hotel Plaza',
+                rating: 4.5,
+                price: 2500,
+                address: 'вул. Хрещатик, 5',
+                amenities: ['WiFi', 'Басейн', 'Сніданок', 'Спа'],
+                image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'
+            },
+            {
+                name: 'Comfort Inn Center',
+                rating: 4.0,
+                price: 1800,
+                address: 'вул. Велика Васильківська, 10',
+                amenities: ['WiFi', 'Паркінг', 'Ресторан'],
+                image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400'
+            },
+            {
+                name: 'Budget Hotel Express',
+                rating: 3.5,
+                price: 1200,
+                address: 'просп. Перемоги, 25',
+                amenities: ['WiFi', 'Кондиціонер'],
+                image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400'
+            }
+        ];
+
+        document.getElementById('resultsCount').textContent = demoHotels.length;
+
+        const hotelsList = document.getElementById('hotelsList');
+        hotelsList.innerHTML = demoHotels.map(hotel => `
+            <div class="col-lg-4 mb-4">
+                <div class="card hotel-search-card h-100">
+                    <img src="${hotel.image}" class="card-img-top" alt="${hotel.name}" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">${hotel.name}</h5>
+                        <div class="mb-2">
+                            ${'⭐'.repeat(Math.floor(hotel.rating))}
+                            <span class="text-muted">(${hotel.rating})</span>
+                        </div>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-geo-alt"></i> ${hotel.address}
+                        </p>
+                        <div class="mb-3">
+                            ${hotel.amenities.map(a => `<span class="badge bg-light text-dark">${a}</span>`).join(' ')}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong class="text-success">${hotel.price} грн</strong>
+                                <small class="text-muted d-block">за ніч</small>
+                            </div>
+                            <button class="btn btn-sm btn-primary" onclick="addHotelToTrip('${hotel.name}', '${hotel.address}', ${hotel.price})">
+                                <i class="bi bi-plus"></i> Додати
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }, 1500);
+});
+
+// Додавання готелю
+function addHotelToTrip(name, address, price) {
+    const checkin = document.getElementById('checkin').value;
+    const checkout = document.getElementById('checkout').value;
+
+    // Створюємо форму для відправки
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("add_accommodation", trip_id=trip.id) }}';
+
+    const fields = {
+        'name': name,
+        'address': address,
+        'check_in': checkin,
+        'check_out': checkout,
+        'price_per_night': price,
+        'booking_status': 'pending'
+    };
+
+    for (const [key, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+
+{% endblock %}

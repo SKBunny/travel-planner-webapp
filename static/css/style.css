@@ -309,7 +309,7 @@ body {
     background: var(--primary-gradient);
     color: white;
     border-radius: 25px;
-    padding: 100px 40px;
+    padding: 60px 40px;
     position: relative;
     overflow: hidden;
     margin-bottom: 60px;
@@ -445,22 +445,7 @@ body {
     margin-top: 80px;
 }
 
-.footer-wave {
-    position: absolute;
-    top: -100px;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    line-height: 0;
-}
 
-.footer-wave svg {
-    position: relative;
-    display: block;
-    width: calc(100% + 1.3px);
-    height: 100px;
-    fill: #1a202c;
-}
 
 .footer-content {
     padding: 80px 0 30px;
@@ -585,3 +570,754 @@ body {
 .card, .trip-card, .activity-item {
     animation: fadeInUp 0.6s ease;
 }
+
+/* ==================== PACKING LIST ==================== */
+
+.packing-header-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-left: 5px solid var(--primary-color);
+}
+
+.packing-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    animation: swing 2s ease-in-out infinite;
+}
+
+@keyframes swing {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.packing-stats h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.packing-progress {
+    border-radius: 15px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.packing-progress .progress-bar {
+    background: var(--primary-gradient);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.5s ease;
+}
+
+.bg-gradient-primary {
+    background: var(--primary-gradient) !important;
+}
+
+.packing-category-card {
+    border: none;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+
+.packing-category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.packing-item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.packing-item {
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.packing-item:last-child {
+    border-bottom: none;
+}
+
+.packing-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.packing-item.packed {
+    opacity: 0.6;
+    background: #f0fff4;
+}
+
+.packing-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.packing-checkbox {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 0;
+}
+
+.packing-checkbox:hover {
+    transform: scale(1.2);
+}
+
+.packing-item.packed .packing-checkbox {
+    color: #48bb78;
+}
+
+.packing-item-info {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.packing-item-name {
+    font-weight: 500;
+}
+
+.packing-item.packed .packing-item-name {
+    text-decoration: line-through;
+    color: #718096;
+}
+
+.packing-delete-btn {
+    background: none;
+    border: none;
+    color: #e53e3e;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: var(--transition);
+    padding: 0;
+}
+
+.packing-item:hover .packing-delete-btn {
+    opacity: 1;
+}
+
+.packing-delete-btn:hover {
+    transform: scale(1.2);
+}
+
+.empty-state {
+    animation: fadeInUp 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .packing-stats h3 {
+        font-size: 2rem;
+    }
+
+    .packing-icon {
+        font-size: 2rem;
+    }
+}
+
+/* ==================== ACCOMMODATIONS ==================== */
+
+.accommodation-header-card {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%);
+    border-left: 5px solid #4facfe;
+}
+
+.accommodation-icon {
+    font-size: 2.5rem;
+    color: #4facfe;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.stat-box {
+    padding: 15px;
+    background: rgba(79, 172, 254, 0.1);
+    border-radius: 12px;
+}
+
+.stat-box h4 {
+    color: #4facfe;
+    font-weight: 700;
+}
+
+.accommodation-card {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.accommodation-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-xl);
+}
+
+.accommodation-image {
+    width: 100%;
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.accommodation-image-placeholder {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.accommodation-image-placeholder i {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.accommodation-dates {
+    background: #f7fafc;
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e0;
+}
+
+.accommodation-price {
+    background: #f0fff4;
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 4px solid #48bb78;
+}
+
+.amenities-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.accommodation-details {
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.accommodation-details i {
+    color: #4facfe;
+    margin-right: 5px;
+}
+
+/* Hotel Search */
+.hotel-search-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.hotel-search-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.booking-service-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.booking-service-card {
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    border: 2px solid #e2e8f0;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.booking-service-card:hover {
+    transform: translateY(-5px);
+    border-color: #4facfe;
+    box-shadow: var(--shadow-md);
+}
+
+.search-form-wrapper {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%);
+    padding: 20px;
+    border-radius: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .accommodation-image {
+        height: 200px;
+    }
+
+    .stat-box h4 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ==================== DARK MODE ==================== */
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* Dark Theme Variables */
+body.dark-mode {
+    --bg-light: #1a202c;
+    --bg-white: #2d3748;
+    --text-dark: #e2e8f0;
+    --text-light: #a0aec0;
+    --border-color: #4a5568;
+
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    color: var(--text-dark);
+}
+
+body.dark-mode .custom-navbar {
+    background: rgba(26, 32, 44, 0.98);
+}
+
+body.dark-mode .card {
+    background: var(--bg-white);
+    color: var(--text-dark);
+}
+
+body.dark-mode .card-header {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background: #1a202c;
+    color: var(--text-dark);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background: #1a202c;
+    color: var(--text-dark);
+    border-color: var(--primary-color);
+}
+
+body.dark-mode .text-muted {
+    color: var(--text-light) !important;
+}
+
+body.dark-mode .custom-footer {
+    background: linear-gradient(135deg, #0d1117 0%, #1a202c 100%);
+}
+
+body.dark-mode .trip-card,
+body.dark-mode .accommodation-card,
+body.dark-mode .packing-category-card {
+    background: var(--bg-white);
+}
+
+body.dark-mode .stat-box {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+body.dark-mode .accommodation-dates {
+    background: #1a202c;
+}
+
+body.dark-mode .day-section {
+    background: #1a202c;
+}
+
+body.dark-mode .activity-item {
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .activity-completed {
+    background: #234e52;
+}
+
+body.dark-mode .booking-service-card {
+    background: var(--bg-white);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .table {
+    color: var(--text-dark);
+}
+
+body.dark-mode .table-light {
+    background: #2d3748;
+}
+
+body.dark-mode .modal-content {
+    background: var(--bg-white);
+    color: var(--text-dark);
+}
+
+body.dark-mode .modal-header {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+}
+
+body.dark-mode .dropdown-menu {
+    background: var(--bg-white);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--text-dark);
+}
+
+body.dark-mode .dropdown-item:hover {
+    background: #1a202c;
+}
+
+/* Smooth transition for theme change */
+body,
+.card,
+.form-control,
+.form-select,
+.navbar,
+.footer {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+
+/* ==================== ПОКРАЩЕНІ АНІМАЦІЇ ==================== */
+
+/* Плавна поява при завантаженні */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Застосування анімацій */
+.card {
+    animation: scaleIn 0.5s ease;
+}
+
+.trip-card:nth-child(1) { animation-delay: 0.1s; }
+.trip-card:nth-child(2) { animation-delay: 0.2s; }
+.trip-card:nth-child(3) { animation-delay: 0.3s; }
+.trip-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Покращені ховер-ефекти для кнопок */
+.btn {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    z-index: -1;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Ripple effect для кнопок */
+.btn:active {
+    transform: scale(0.95);
+}
+
+/* Покращені картки з gradient border */
+.trip-card {
+    position: relative;
+    background: white;
+    border: none;
+}
+
+.trip-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 15px 15px 0 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.trip-card:hover::before {
+    opacity: 1;
+}
+
+/* Floating labels для форм */
+.form-floating {
+    position: relative;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Skeleton loading для карток */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(to right, #f0f0f0 4%, #f8f8f8 25%, #f0f0f0 36%);
+    background-size: 1000px 100%;
+}
+
+/* Гарні shadow ефекти */
+.card-hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+}
+
+/* Красиві badges */
+.badge {
+    padding: 0.5em 1em;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Gradient text */
+.gradient-text {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Icon animations */
+.icon-bounce {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.icon-rotate {
+    transition: transform 0.3s ease;
+}
+
+.icon-rotate:hover {
+    transform: rotate(360deg);
+}
+
+/* Progress bars з градієнтом */
+.progress-bar {
+    background: var(--primary-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+/* Кастомні scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+body.dark-mode::-webkit-scrollbar-track {
+    background: #1a202c;
+}
+
+/* Покращені модальні вікна */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Blur background для модалів */
+.modal-backdrop.show {
+    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== USER PROFILE ==================== */
+
+.profile-card {
+    border: none;
+    border-radius: 20px;
+}
+
+.profile-avatar {
+    display: flex;
+    justify-content: center;
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.avatar-text {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(102, 126, 234, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-content h3 {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.settings-item {
+    padding: 10px 0;
+}
+
+/* Dark mode для профілю */
+body.dark-mode .avatar-circle {
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+body.dark-mode .stat-icon {
+    background: rgba(102, 126, 234, 0.2);
+}
+

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Готелі - {{ trip.title }} - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <a href="{{ url_for('view_trip', trip_id=trip.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад до поїздки
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('search_accommodations', trip_id=trip.id) }}" class="btn btn-info">
+            <i class="bi bi-search"></i> Пошук готелів
+        </a>
+        <a href="{{ url_for('add_accommodation', trip_id=trip.id) }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Додати готель
+        </a>
+    </div>
+</div>
+
+<!-- Header Card -->
+<div class="card shadow-sm mb-4 accommodation-header-card">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2 class="mb-2">
+                    <i class="bi bi-building accommodation-icon"></i>
+                    Готелі та проживання
+                </h2>
+                <p class="text-muted mb-0">{{ trip.title }} • {{ trip.destination }}</p>
+            </div>
+            <div class="col-md-6">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <h4 class="mb-0">{{ accommodations|length }}</h4>
+                            <small class="text-muted">Готелів</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <h4 class="mb-0">{{ total_nights }}</h4>
+                            <small class="text-muted">Ночей</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Total Cost Card -->
+{% if accommodations %}
+<div class="card shadow-sm mb-4 border-start border-4 border-success">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1"><i class="bi bi-cash-stack"></i> Загальна вартість проживання</h5>
+                <p class="text-muted mb-0">За {{ total_nights }} {{ total_nights|plural('ніч', 'ночі', 'ночей') }}</p>
+            </div>
+            <h2 class="mb-0 text-success">{{ "%.2f"|format(total_cost) }} грн</h2>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Accommodations List -->
+{% if accommodations %}
+    <div class="row">
+        {% for acc in accommodations %}
+            <div class="col-lg-6 mb-4">
+                <div class="card accommodation-card h-100">
+                    {% if acc.image_url %}
+                        <div class="accommodation-image" style="background-image: url('{{ acc.image_url }}');"></div>
+                    {% else %}
+                        <div class="accommodation-image accommodation-image-placeholder">
+                            <i class="bi bi-building"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ acc.name }}</h5>
+                            <span class="badge 
+                                {% if acc.booking_status == 'confirmed' %}bg-success
+                                {% elif acc.booking_status == 'pending' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {% if acc.booking_status == 'confirmed' %}✓ Підтверджено
+                                {% elif acc.booking_status == 'pending' %}⏳ В очікуванні
+                                {% else %}✗ Скасовано{% endif %}
+                            </span>
+                        </div>
+                        
+                        {% if acc.rating > 0 %}
+                            <div class="mb-2">
+                                {% for i in range(acc.rating|int) %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% endfor %}
+                                {% if acc.rating % 1 != 0 %}
+                                    <i class="bi bi-star-half text-warning"></i>
+                                {% endif %}
+                                <span class="text-muted small">({{ acc.rating }})</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if acc.address %}
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-geo-alt"></i> {{ acc.address }}
+                            </p>
+                        {% endif %}
+                        
+                        <div class="accommodation-dates mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Заїзд</small>
+                                    <strong>{{ acc.check_in.strftime('%d.%m.%Y') }}</strong>
+                                    <small class="d-block text-muted">14:00</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Виїзд</small>
+                                    <strong>{{ acc.check_out.strftime('%d.%m.%Y') }}</strong>
+                                    <small class="d-block text-muted">12:00</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accommodation-price mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ (acc.check_out - acc.check_in).days }} {{ (acc.check_out - acc.check_in).days|plural('ніч', 'ночі', 'ночей') }} × {{ "%.0f"|format(acc.price_per_night) }} грн</span>
+                                <strong class="text-success">{{ "%.2f"|format(acc.total_price) }} грн</strong>
+                            </div>
+                        </div>
+                        
+                        {% if acc.amenities %}
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">Зручності:</small>
+                                <div class="amenities-tags">
+                                    {% for amenity in acc.amenities.split(',') %}
+                                        <span class="badge bg-light text-dark">{{ amenity.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="accommodation-details">
+                            {% if acc.booking_reference %}
+                                <small class="d-block mb-1">
+                                    <i class="bi bi-ticket-detailed"></i> 
+                                    <strong>Бронювання:</strong> {{ acc.booking_reference }}
+                                </small>
+                            {% endif %}
+                            {% if acc.phone %}
+                                <small class="d-block mb-1">
+                                    <i class="bi bi-telephone"></i> {{ acc.phone }}
+                                </small>
+                            {% endif %}
+                            {% if acc.email %}
+                                <small class="d-block mb-1">
+                                    <i class="bi bi-envelope"></i> {{ acc.email }}
+                                </small>
+                            {% endif %}
+                            {% if acc.website %}
+                                <small class="d-block">
+                                    <i class="bi bi-globe"></i> 
+                                    <a href="{{ acc.website }}" target="_blank">Сайт готелю</a>
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        {% if acc.notes %}
+                            <div class="alert alert-info mt-3 mb-0">
+                                <small><strong>Нотатки:</strong> {{ acc.notes }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer bg-light">
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('edit_accommodation', trip_id=trip.id, acc_id=acc.id) }}" 
+                               class="btn btn-sm btn-outline-warning flex-grow-1">
+                                <i class="bi bi-pencil"></i> Редагувати
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ acc.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delete Modal -->
+            <div class="modal fade" id="deleteModal{{ acc.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Видалити готель?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            Видалити "{{ acc.name }}" зі списку?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <form method="POST" action="{{ url_for('delete_accommodation', trip_id=trip.id, acc_id=acc.id) }}">
+                                <button type="submit" class="btn btn-danger">Так, видалити</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <div class="empty-state">
+            <i class="bi bi-building" style="font-size: 5rem; color: #cbd5e0;"></i>
+            <h3 class="mt-4 text-muted">Немає доданих готелів</h3>
+            <p class="text-muted mb-4">Додайте інформацію про проживання для вашої подорожі</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{{ url_for('search_accommodations', trip_id=trip.id) }}" class="btn btn-info">
+                    <i class="bi bi-search"></i> Шукати готелі
+                </a>
+                <a href="{{ url_for('add_accommodation', trip_id=trip.id) }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Додати вручну
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

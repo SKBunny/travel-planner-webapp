@@ -20,6 +20,11 @@
                 <span class="brand-text">Travel<span class="brand-highlight">Planner</span></span>
             </a>
 
+            <!-- Theme Switcher -->
+            <button class="btn btn-sm theme-toggle ms-3" id="themeToggle" onclick="toggleTheme()">
+                <i class="bi bi-moon-stars" id="themeIcon"></i>
+            </button>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -29,12 +34,12 @@
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link nav-link-custom" href="{{ url_for('dashboard') }}">
-                                <i class="bi bi-grid"></i> Мої поїздки
+                                <i class="bi bi-grid-3x3-gap"></i> Мої поїздки
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link nav-link-custom" href="{{ url_for('new_trip') }}">
-                                <i class="bi bi-plus-circle"></i> Нова поїздка
+                                <i class="bi bi-plus-circle-fill"></i> Нова поїздка
                             </a>
                         </li>
                         <li class="nav-item dropdown">
@@ -42,19 +47,28 @@
                                 <i class="bi bi-person-circle"></i> {{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end custom-dropdown">
-                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('user_profile') }}">
+                                        <i class="bi bi-person-badge"></i> Профіль
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                                        <i class="bi bi-speedometer2"></i> Dashboard
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                                    <i class="bi bi-box-arrow-right"></i> Вихід
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                        <i class="bi bi-box-arrow-right"></i> Вихід
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link nav-link-custom" href="{{ url_for('index') }}">
-                                <i class="bi bi-house"></i> Головна
+                                <i class="bi bi-house-door"></i> Головна
                             </a>
                         </li>
                         <li class="nav-item">
@@ -64,7 +78,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="btn btn-gradient-primary btn-sm ms-2" href="{{ url_for('register') }}">
-                                Реєстрація
+                                <i class="bi bi-person-plus"></i> Реєстрація
                             </a>
                         </li>
                     {% endif %}
@@ -107,12 +121,6 @@
 
     <!-- Footer -->
     <footer class="custom-footer">
-        <div class="footer-wave">
-            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
-            </svg>
-        </div>
-
         <div class="container footer-content">
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
