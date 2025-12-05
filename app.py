@@ -495,36 +495,99 @@ def trip_statistics(trip_id):
         flash('У вас немає доступу до цієї поїздки', 'danger')
         return redirect(url_for('dashboard'))
 
-    # Статистика по категоріях
-    stats = {
-        'transport': 0,
-        'food': 0,
-        'activity': 0,
-        'accommodation': 0,
-        'shopping': 0,
-        'general': 0
-    }
+    # Витрати з активностей
+    activities = Activity.query.filter_by(trip_id=trip.id).all()
+    total_activities_cost = sum(activity.cost for activity in activities)
 
-    for activity in trip.activities:
-        if activity.category in stats:
-            stats[activity.category] += activity.cost
+    # Витрати на готелі
+    accommodations = Accommodation.query.filter_by(trip_id=trip.id).all()
+    total_accommodation_cost = sum(acc.total_price for acc in accommodations)
 
-    total_spent = sum(stats.values())
-    remaining = trip.budget - total_spent
+    # Загальні витрати
+    total_spent = total_activities_cost + total_accommodation_cost
+    remaining_budget = trip.budget - total_spent
+    budget_percentage = (total_spent / trip.budget * 100) if trip.budget > 0 else 0
+
+    # Витрати по категоріях активностей
+    category_costs = {}
+    for activity in activities:
+        if activity.category in category_costs:
+            category_costs[activity.category] += activity.cost
+        else:
+            category_costs[activity.category] = activity.cost
+
+    # Додаємо готелі як окрему категорію
+    if total_accommodation_cost > 0:
+        category_costs['accommodation_hotels'] = total_accommodation_cost
 
     # Відсоток виконаних активностей
-    total_activities = len(trip.activities)
-    completed_activities = len([a for a in trip.activities if a.completed])
-    completion_rate = (completed_activities / total_activities * 100) if total_activities > 0 else 0
+    completed_activities = len([a for a in activities if a.completed])
+    completion_rate = (completed_activities / len(activities) * 100) if activities else 0
+
+    # Назви категорій українською
+    category_names = {
+        'transport': '🚗 Транспорт',
+        'food': '🍽️ Їжа',
+        'activity': '🎡 Розваги',
+        'accommodation': '🏨 Додаткове проживання',
+        'shopping': '🛍️ Покупки',
+        'general': '🎯 Загальне',
+        'accommodation_hotels': '🏨 Готелі'
+    }
+
+    # Підготовка даних для діаграми
+    category_data = []
+    for category, cost in category_costs.items():
+        percentage = (cost / total_spent * 100) if total_spent > 0 else 0
+        category_data.append({
+            'name': category_names.get(category, category),
+            'cost': cost,
+            'percentage': percentage
+        })
+
+    # Сортуємо за вартістю
+    category_data.sort(key=lambda x: x['cost'], reverse=True)
+
+    # Детальний список витрат (активності + готелі)
+    expense_list = []
+
+    # Додаємо активності
+    for activity in activities:
+        expense_list.append({
+            'type': 'activity',
+            'date': activity.date,
+            'title': activity.title,
+            'category': category_names.get(activity.category, activity.category),
+            'cost': activity.cost
+        })
+
+    # Додаємо готелі
+    for acc in accommodations:
+        nights = (acc.check_out - acc.check_in).days
+        expense_list.append({
+            'type': 'accommodation',
+            'date': acc.check_in,
+            'title': f"{acc.name} ({nights} ночей)",
+            'category': '🏨 Готелі',
+            'cost': acc.total_price
+        })
+
+    # Сортуємо за датою
+    expense_list.sort(key=lambda x: x['date'])
 
     return render_template('trip_statistics.html',
                            trip=trip,
-                           stats=stats,
                            total_spent=total_spent,
-                           remaining=remaining,
+                           total_activities_cost=total_activities_cost,
+                           total_accommodation_cost=total_accommodation_cost,
+                           remaining_budget=remaining_budget,
+                           budget_percentage=budget_percentage,
+                           category_data=category_data,
                            completion_rate=completion_rate,
-                           total_activities=total_activities,
-                           completed_activities=completed_activities)
+                           expense_list=expense_list,
+                           activities_count=len(activities),
+                           completed_count=completed_activities,
+                           accommodations_count=len(accommodations))
 
 
 # Packing List - перегляд
