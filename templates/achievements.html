@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Досягнення - Travel Planner{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <h1 class="mb-2">
+            <i class="bi bi-trophy"></i> Досягнення
+        </h1>
+        <p class="text-muted">Відстежуйте свій прогрес та розблоковуйте нові значки</p>
+    </div>
+</div>
+
+<!-- Рівень користувача -->
+<div class="row mb-4">
+    <div class="col-lg-6 mx-auto">
+        <div class="card shadow-lg text-center" style="background: linear-gradient(135deg, {{ user_level.color }} 0%, #667eea 100%);">
+            <div class="card-body py-4">
+                <div style="font-size: 4rem;">{{ user_level.icon }}</div>
+                <h2 class="text-white mb-2">{{ user_level.level }}</h2>
+                <p class="text-white mb-3 opacity-75">{{ trips_count }} {{ trips_count|plural('поїздка', 'поїздки', 'поїздок') }}</p>
+                
+                {% if user_level.next %}
+                    <p class="text-white small mb-2">До наступного рівня: {{ user_level.next - trips_count }} {{ (user_level.next - trips_count)|plural('поїздка', 'поїздки', 'поїздок') }}</p>
+                    <div class="progress" style="height: 20px; background: rgba(255,255,255,0.3);">
+                        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%; background: white;">
+                            {{ "%.0f"|format(progress) }}%
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-white">🎉 Ви досягли максимального рівня!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика року -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-warning text-white">
+        <h5 class="mb-0"><i class="bi bi-calendar-star"></i> Підсумки {{ current_year }} року</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="p-3">
+                    <i class="bi bi-suitcase-lg" style="font-size: 2.5rem; color: #667eea;"></i>
+                    <h3 class="mt-2 mb-0">{{ year_stats.trips }}</h3>
+                    <p class="text-muted mb-0">{{ year_stats.trips|plural('Поїздка', 'Поїздки', 'Поїздок') }}</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="p-3">
+                    <i class="bi bi-geo-alt" style="font-size: 2.5rem; color: #f56565;"></i>
+                    <h3 class="mt-2 mb-0">{{ year_stats.countries }}</h3>
+                    <p class="text-muted mb-0">{{ year_stats.countries|plural('Напрямок', 'Напрямки', 'Напрямків') }}</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="p-3">
+                    <i class="bi bi-calendar-check" style="font-size: 2.5rem; color: #48bb78;"></i>
+                    <h3 class="mt-2 mb-0">{{ year_stats.total_days }}</h3>
+                    <p class="text-muted mb-0">{{ year_stats.total_days|plural('День', 'Дні', 'Днів') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Прогрес досягнень -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Прогрес збирання значків</h5>
+            <span class="badge bg-primary fs-6">{{ unlocked|length }} / {{ total_achievements }}</span>
+        </div>
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar bg-gradient-primary" role="progressbar" 
+                 style="width: {{ (unlocked|length / total_achievements * 100) }}%">
+                {{ "%.0f"|format(unlocked|length / total_achievements * 100) }}%
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Розблоковані досягнення -->
+{% if unlocked %}
+<h4 class="mb-3"><i class="bi bi-unlock-fill text-success"></i> Розблоковані ({{ unlocked|length }})</h4>
+<div class="row mb-5">
+    {% for achievement in unlocked %}
+        <div class="col-md-4 col-lg-3 mb-4">
+            <div class="card h-100 achievement-card unlocked shadow-sm" style="border-color: {{ achievement.color }};">
+                <div class="card-body text-center">
+                    <div class="achievement-icon mb-3" style="font-size: 3rem;">
+                        {{ achievement.icon }}
+                    </div>
+                    <h6 class="card-title mb-2">{{ achievement.name }}</h6>
+                    <p class="card-text small text-muted mb-2">{{ achievement.description }}</p>
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i>
+                        {{ achievement.unlocked_at.strftime('%d.%m.%Y') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Заблоковані досягнення -->
+{% if locked %}
+<h4 class="mb-3"><i class="bi bi-lock-fill text-secondary"></i> Заблоковані ({{ locked|length }})</h4>
+<div class="row">
+    {% for achievement in locked %}
+        <div class="col-md-4 col-lg-3 mb-4">
+            <div class="card h-100 achievement-card locked">
+                <div class="card-body text-center">
+                    <div class="achievement-icon mb-3" style="font-size: 3rem; filter: grayscale(100%); opacity: 0.3;">
+                        {{ achievement.icon }}
+                    </div>
+                    <h6 class="card-title mb-2 text-muted">{{ achievement.name }}</h6>
+                    <p class="card-text small text-muted mb-0">{{ achievement.description }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.achievement-card {
+    transition: var(--transition);
+    border-width: 3px;
+}
+
+.achievement-card.unlocked {
+    background: white;
+}
+
+.achievement-card.unlocked:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: var(--shadow-xl);
+}
+
+.achievement-card.locked {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+    opacity: 0.7;
+}
+
+.achievement-icon {
+    display: inline-block;
+    transition: var(--transition);
+}
+
+.achievement-card.unlocked:hover .achievement-icon {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+
+{% endblock %}

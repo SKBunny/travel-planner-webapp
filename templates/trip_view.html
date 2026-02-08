@@ -35,6 +35,7 @@
     </div>
 </div>
 
+<!-- Основна інформація про поїздку -->
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">
         <h2 class="mb-0">{{ trip.title }}</h2>
@@ -54,31 +55,90 @@
                 <p class="mb-0">{{ (trip.end_date - trip.start_date).days + 1 }} днів</p>
             </div>
             <div class="col-md-3 mb-3">
-    <h6><i class="bi bi-wallet2"></i> Бюджет</h6>
-    <p class="lead mb-0">
-        {{ "%.2f"|format(trip.budget) }} {{ currency_symbols.get(trip.currency, trip.currency) }}
-    </p>
-    {% if trip.currency != 'UAH' %}
-        <small class="text-muted d-block">
-            ≈ {{ "%.2f"|format(trip.budget * currency_rates[trip.currency]) }} ₴
-        </small>
-    {% endif %}
+                <h6><i class="bi bi-wallet2"></i> Бюджет</h6>
+                <p class="lead mb-0">
+                    {{ "%.2f"|format(trip.budget) }} {{ currency_symbols.get(trip.currency, trip.currency) }}
+                </p>
+                {% if trip.currency != 'UAH' %}
+                    <small class="text-muted d-block">
+                        ≈ {{ "%.2f"|format(trip.budget * currency_rates[trip.currency]) }} ₴
+                    </small>
+                {% endif %}
 
-    {% if trip.activities %}
-        {% set total_spent = trip.activities|sum(attribute='cost') %}
-        <small class="text-muted d-block mt-2">
-            Витрачено: {{ "%.2f"|format(total_spent) }} грн
-        </small>
-        {% if total_spent > (trip.budget * currency_rates[trip.currency]) %}
-            <small class="text-danger d-block">
-                Перевищення на {{ "%.2f"|format(total_spent - (trip.budget * currency_rates[trip.currency])) }} грн
-            </small>
-        {% endif %}
-    {% endif %}
-</div>
+                {% if trip.activities %}
+                    {% set total_spent = trip.activities|sum(attribute='cost') %}
+                    <small class="text-muted d-block mt-2">
+                        Витрачено: {{ "%.2f"|format(total_spent) }} грн
+                    </small>
+                    {% if total_spent > (trip.budget * currency_rates[trip.currency]) %}
+                        <small class="text-danger d-block">
+                            Перевищення на {{ "%.2f"|format(total_spent - (trip.budget * currency_rates[trip.currency])) }} грн
+                        </small>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Погода -->
+{% if weather %}
+<div class="card shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="card-body text-white">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png"
+                         alt="Погода" style="width: 80px; height: 80px;">
+                    <div>
+                        <h3 class="mb-0">{{ weather.temp }}°C</h3>
+                        <p class="mb-0">{{ weather.description|capitalize }}</p>
+                        <small>Відчувається як {{ weather.feels_like }}°C</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <i class="bi bi-droplet" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0 small">{{ weather.humidity }}%</p>
+                        <small class="opacity-75">Вологість</small>
+                    </div>
+                    <div class="col-4">
+                        <i class="bi bi-wind" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0 small">{{ weather.wind_speed }} км/год</p>
+                        <small class="opacity-75">Вітер</small>
+                    </div>
+                    <div class="col-4">
+                        <i class="bi bi-speedometer" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0 small">{{ weather.pressure }} мбар</p>
+                        <small class="opacity-75">Тиск</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Прогноз на тиждень -->
+        {% if weather_forecast %}
+        <hr class="my-3 opacity-25">
+        <h6 class="mb-3"><i class="bi bi-calendar-week"></i> Прогноз на тиждень</h6>
+        <div class="row g-2">
+            {% for day in weather_forecast %}
+            <div class="col">
+                <div class="text-center p-2 rounded" style="background: rgba(255,255,255,0.1);">
+                    <small class="d-block">{{ day.date.strftime('%d.%m') }}</small>
+                    <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png"
+                         alt="Погода" style="width: 40px; height: 40px;">
+                    <strong class="d-block">{{ day.temp }}°</strong>
+                    <small class="opacity-75">{{ day.temp_min }}°/{{ day.temp_max }}°</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 <!-- План активностей -->
 <div class="card shadow-sm">
@@ -89,25 +149,15 @@
         </a>
     </div>
     <div class="card-body">
-        {% if trip.activities %}
-            {% set activities_by_date = {} %}
-            {% for activity in trip.activities %}
-                {% set date_key = activity.date.strftime('%Y-%m-%d') %}
-                {% if date_key not in activities_by_date %}
-                    {% set _ = activities_by_date.update({date_key: []}) %}
-                {% endif %}
-                {% set _ = activities_by_date[date_key].append(activity) %}
-            {% endfor %}
-
-            {% for date_key in activities_by_date.keys()|sort %}
-                {% set activities = activities_by_date[date_key] %}
-                {% set date_obj = activities[0].date %}
+        {% if activities_by_day %}
+            {% for day_date in activities_by_day.keys()|sort %}
+                {% set activities = activities_by_day[day_date] %}
 
                 <div class="day-section mb-4">
                     <h5 class="border-bottom pb-2 mb-3">
                         <i class="bi bi-calendar-day"></i>
-                        {{ date_obj.strftime('%d %B %Y') }}
-                        <small class="text-muted">({{ ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'][date_obj.weekday()] }})</small>
+                        {{ day_date.strftime('%d %B %Y') }}
+                        <small class="text-muted">({{ ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'][day_date.weekday()] }})</small>
                     </h5>
 
                     <div class="timeline">

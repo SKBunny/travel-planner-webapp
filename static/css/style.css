@@ -1351,3 +1351,55 @@ background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 body.dark-mode::-webkit-scrollbar-track {
 background: #1a202c;
 }
+/* ==================== PWA INSTALL PROMPT ==================== */
+
+.install-prompt {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    z-index: 9999;
+    transition: bottom 0.3s ease;
+}
+
+.install-prompt.show {
+    bottom: 20px;
+}
+
+.install-prompt-content {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border: 2px solid #667eea;
+}
+
+body.dark-mode .install-prompt-content {
+    background: #2d3748;
+    border-color: #667eea;
+}
+
+@media (max-width: 768px) {
+    .install-prompt {
+        width: 95%;
+        bottom: -150px;
+    }
+
+    .install-prompt.show {
+        bottom: 10px;
+    }
+
+    .install-prompt-content {
+        padding: 15px;
+    }
+}
+
+/* Додаткові стилі для standalone режиму */
+@media (display-mode: standalone) {
+    /* Коли додаток встановлено */
+    .install-prompt {
+        display: none !important;
+    }
+}

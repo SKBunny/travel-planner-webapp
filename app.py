@@ -13,6 +13,159 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask import send_from_directory
+import requests
+from dotenv import load_dotenv
+import os
+
+# Завантажуємо змінні середовища
+load_dotenv()
+
+# API ключі
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '')
+WEATHER_ENABLED = os.getenv('WEATHER_ENABLED', 'True') == 'True'
+
+# Система досягнень
+ACHIEVEMENTS = {
+    'first_trip': {
+        'name': 'Перша подорож',
+        'description': 'Створіть свою першу поїздку',
+        'icon': '🎉',
+        'color': '#48bb78'
+    },
+    'trips_5': {
+        'name': 'Мандрівник',
+        'description': 'Створіть 5 поїздок',
+        'icon': '🎒',
+        'color': '#4299e1'
+    },
+    'trips_10': {
+        'name': 'Досвідчений',
+        'description': 'Створіть 10 поїздок',
+        'icon': '✈️',
+        'color': '#9f7aea'
+    },
+    'trips_25': {
+        'name': 'Майстер подорожей',
+        'description': 'Створіть 25 поїздок',
+        'icon': '🌍',
+        'color': '#ed8936'
+    },
+    'countries_5': {
+        'name': 'Дослідник',
+        'description': 'Відвідайте 5 країн',
+        'icon': '🗺️',
+        'color': '#38b2ac'
+    },
+    'countries_10': {
+        'name': 'Глобус-троттер',
+        'description': 'Відвідайте 10 країн',
+        'icon': '🌎',
+        'color': '#f56565'
+    },
+    'budget_master': {
+        'name': 'Економний',
+        'description': 'Завершіть поїздку в межах бюджету',
+        'icon': '💰',
+        'color': '#48bb78'
+    },
+    'planner': {
+        'name': 'Планувальник',
+        'description': 'Додайте 50+ активностей',
+        'icon': '📋',
+        'color': '#667eea'
+    },
+    'year_summary': {
+        'name': 'Рік подорожей',
+        'description': 'Подорожуйте протягом року',
+        'icon': '🎊',
+        'color': '#f687b3'
+    }
+}
+
+
+def check_achievements(user_id):
+    """Перевіряє та розблоковує досягнення"""
+    from datetime import datetime, date
+
+    user = User.query.get(user_id)
+    trips = Trip.query.filter_by(user_id=user_id).all()
+
+    new_achievements = []
+
+    # Кількість поїздок
+    trips_count = len(trips)
+
+    achievements_to_check = [
+        ('first_trip', 1),
+        ('trips_5', 5),
+        ('trips_10', 10),
+        ('trips_25', 25)
+    ]
+
+    for achievement_key, required_count in achievements_to_check:
+        if trips_count >= required_count:
+            # Перевірка чи вже є це досягнення
+            existing = UserAchievement.query.filter_by(
+                user_id=user_id,
+                achievement_type=achievement_key
+            ).first()
+
+            if not existing:
+                new_achievement = UserAchievement(
+                    user_id=user_id,
+                    achievement_type=achievement_key
+                )
+                db.session.add(new_achievement)
+                new_achievements.append(ACHIEVEMENTS[achievement_key])
+
+    # Кількість країн
+    destinations = set([trip.destination for trip in trips])
+    countries_count = len(destinations)
+
+    if countries_count >= 5:
+        existing = UserAchievement.query.filter_by(user_id=user_id, achievement_type='countries_5').first()
+        if not existing:
+            new_achievement = UserAchievement(user_id=user_id, achievement_type='countries_5')
+            db.session.add(new_achievement)
+            new_achievements.append(ACHIEVEMENTS['countries_5'])
+
+    if countries_count >= 10:
+        existing = UserAchievement.query.filter_by(user_id=user_id, achievement_type='countries_10').first()
+        if not existing:
+            new_achievement = UserAchievement(user_id=user_id, achievement_type='countries_10')
+            db.session.add(new_achievement)
+            new_achievements.append(ACHIEVEMENTS['countries_10'])
+
+    # Кількість активностей
+    total_activities = Activity.query.join(Trip).filter(Trip.user_id == user_id).count()
+
+    if total_activities >= 50:
+        existing = UserAchievement.query.filter_by(user_id=user_id, achievement_type='planner').first()
+        if not existing:
+            new_achievement = UserAchievement(user_id=user_id, achievement_type='planner')
+            db.session.add(new_achievement)
+            new_achievements.append(ACHIEVEMENTS['planner'])
+
+    db.session.commit()
+
+    return new_achievements
+
+
+def get_user_level(user_id):
+    """Визначає рівень користувача"""
+    trips_count = Trip.query.filter_by(user_id=user_id).count()
+
+    if trips_count >= 25:
+        return {'level': 'Легенда', 'icon': '👑', 'color': '#f6ad55', 'next': None}
+    elif trips_count >= 10:
+        return {'level': 'Майстер', 'icon': '🌟', 'color': '#9f7aea', 'next': 25}
+    elif trips_count >= 5:
+        return {'level': 'Досвідчений', 'icon': '✨', 'color': '#4299e1', 'next': 10}
+    elif trips_count >= 1:
+        return {'level': 'Мандрівник', 'icon': '🎒', 'color': '#48bb78', 'next': 5}
+    else:
+        return {'level': 'Новачок', 'icon': '🌱', 'color': '#a0aec0', 'next': 1}
 
 
 def transliterate(text):
@@ -236,6 +389,13 @@ def register():
 
     return render_template('register.html')
 
+# Service Worker з правильними headers
+@app.route('/sw.js')
+def service_worker():
+    response = send_from_directory('static', 'sw.js')
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
 
 # Вхід
 @app.route('/login', methods=['GET', 'POST'])
@@ -559,14 +719,159 @@ def trip_calendar():
                            month_trips=month_trips,
                            all_trips=trips)
 
+
+# ==================== API ІНТЕГРАЦІЇ ====================
+
+def get_weather(city, country_code=''):
+    """Отримує погоду для міста"""
+    if not WEATHER_ENABLED or not OPENWEATHER_API_KEY:
+        return None
+
+    try:
+        # Формуємо запит
+        location = f"{city},{country_code}" if country_code else city
+        url = f"http://api.openweathermap.org/data/2.5/weather"
+        params = {
+            'q': location,
+            'appid': OPENWEATHER_API_KEY,
+            'units': 'metric',
+            'lang': 'uk'
+        }
+
+        response = requests.get(url, params=params, timeout=5)
+
+        if response.status_code == 200:
+            data = response.json()
+
+            return {
+                'temp': round(data['main']['temp']),
+                'feels_like': round(data['main']['feels_like']),
+                'description': data['weather'][0]['description'],
+                'icon': data['weather'][0]['icon'],
+                'humidity': data['main']['humidity'],
+                'wind_speed': round(data['wind']['speed'] * 3.6, 1),  # м/с в км/год
+                'pressure': data['main']['pressure']
+            }
+
+        return None
+
+    except Exception as e:
+        print(f"Помилка отримання погоди: {e}")
+        return None
+
+
+def get_weather_forecast(city, country_code='', days=5):
+    """Отримує прогноз погоди на кілька днів"""
+    if not WEATHER_ENABLED or not OPENWEATHER_API_KEY:
+        return None
+
+    try:
+        location = f"{city},{country_code}" if country_code else city
+        url = f"http://api.openweathermap.org/data/2.5/forecast"
+        params = {
+            'q': location,
+            'appid': OPENWEATHER_API_KEY,
+            'units': 'metric',
+            'lang': 'uk'
+        }
+
+        response = requests.get(url, params=params, timeout=5)
+
+        if response.status_code == 200:
+            data = response.json()
+
+            # Групуємо по днях (беремо полуденні показники)
+            daily_forecast = []
+            current_date = None
+
+            for item in data['list']:
+                dt = datetime.fromtimestamp(item['dt'])
+                date_str = dt.strftime('%Y-%m-%d')
+
+                # Беремо один запис на день (близько 12:00)
+                if date_str != current_date and dt.hour >= 11 and dt.hour <= 14:
+                    current_date = date_str
+                    daily_forecast.append({
+                        'date': dt,
+                        'temp': round(item['main']['temp']),
+                        'temp_min': round(item['main']['temp_min']),
+                        'temp_max': round(item['main']['temp_max']),
+                        'description': item['weather'][0]['description'],
+                        'icon': item['weather'][0]['icon']
+                    })
+
+                    if len(daily_forecast) >= days:
+                        break
+
+            return daily_forecast
+
+        return None
+
+    except Exception as e:
+        print(f"Помилка отримання прогнозу: {e}")
+        return None
+
+
+def get_live_exchange_rates():
+    """Отримує актуальні курси валют з ПриватБанку"""
+    try:
+        url = "https://api.privatbank.ua/p24api/pubinfo?exchange&coursid=5"
+        response = requests.get(url, timeout=5)
+
+        if response.status_code == 200:
+            data = response.json()
+
+            rates = {'UAH': 1.0}
+
+            for item in data:
+                if item['ccy'] in ['USD', 'EUR']:
+                    # Беремо курс продажу
+                    rates[item['ccy']] = float(item['sale'])
+
+            # Додаємо інші валюти через USD
+            if 'USD' in rates:
+                rates['PLN'] = rates['USD'] / 4.0  # Приблизно
+                rates['GBP'] = rates['USD'] * 1.27
+                rates['CHF'] = rates['USD'] * 1.1
+                rates['CZK'] = rates['USD'] / 23
+
+            return rates
+
+        return None
+
+    except Exception as e:
+        print(f"Помилка отримання курсів: {e}")
+        return None
+
+
+def parse_city_country(destination):
+    """Парсить місто та країну з рядка напрямку"""
+    # Очікуємо формат: "Київ, Україна" або просто "Париж"
+    parts = [p.strip() for p in destination.split(',')]
+
+    if len(parts) >= 2:
+        return parts[0], parts[1]  # місто, країна
+    else:
+        return parts[0], ''  # тільки місто
+
+
 # Конвертер валют
 @app.route('/converter')
 @login_required
 def currency_converter():
+    # Спробуємо отримати живі курси
+    live_rates = get_live_exchange_rates()
+
+    # Якщо не вийшло, використовуємо статичні
+    rates = live_rates if live_rates else CURRENCY_RATES
+
     return render_template('currency_converter.html',
-                          currencies=CURRENCY_RATES.keys(),
-                          currency_rates=CURRENCY_RATES,
-                          currency_symbols=CURRENCY_SYMBOLS)
+                           currencies=rates.keys(),
+                           currency_rates=rates,
+                           currency_symbols=CURRENCY_SYMBOLS,
+                           live_rates=live_rates is not None)
+
+
 # Створення поїздки
 @app.route('/trip/new', methods=['GET', 'POST'])
 @login_required
@@ -615,6 +920,20 @@ def new_trip():
         db.session.add(new_trip)
         db.session.commit()
 
+        db.session.add(new_trip)
+        db.session.commit()
+
+        # Перевірка досягнень
+        new_badges = check_achievements(current_user.id)
+
+        flash('Поїздку створено!', 'success')
+
+        # Повідомлення про нові досягнення
+        for badge in new_badges:
+            flash(f"🏆 Нове досягнення: {badge['icon']} {badge['name']}!", 'info')
+
+        return redirect(url_for('dashboard'))
+
         flash('Поїздку створено!', 'success')
         return redirect(url_for('dashboard'))
 
@@ -623,6 +942,71 @@ def new_trip():
                            currency_symbols=CURRENCY_SYMBOLS)
 
     return render_template('trip.html')
+
+
+# Сторінка досягнень
+@app.route('/achievements')
+@login_required
+def achievements_page():
+    from datetime import datetime, date
+
+    # Отримуємо всі досягнення користувача
+    user_achievements = UserAchievement.query.filter_by(user_id=current_user.id).all()
+    unlocked_types = [a.achievement_type for a in user_achievements]
+
+    # Розділяємо на розблоковані та заблоковані
+    unlocked = []
+    locked = []
+
+    for key, achievement in ACHIEVEMENTS.items():
+        achievement_data = {
+            'key': key,
+            'name': achievement['name'],
+            'description': achievement['description'],
+            'icon': achievement['icon'],
+            'color': achievement['color']
+        }
+
+        if key in unlocked_types:
+            # Знаходимо дату розблокування
+            user_ach = next((a for a in user_achievements if a.achievement_type == key), None)
+            if user_ach:
+                achievement_data['unlocked_at'] = user_ach.unlocked_at
+            unlocked.append(achievement_data)
+        else:
+            locked.append(achievement_data)
+
+    # Рівень користувача
+    user_level = get_user_level(current_user.id)
+    trips_count = Trip.query.filter_by(user_id=current_user.id).count()
+
+    # Прогрес до наступного рівня
+    if user_level['next']:
+        progress = (trips_count / user_level['next']) * 100
+    else:
+        progress = 100
+
+    # Статистика року
+    current_year = datetime.now().year
+    year_trips = Trip.query.filter_by(user_id=current_user.id).filter(
+        db.func.strftime('%Y', Trip.start_date) == str(current_year)
+    ).all()
+
+    year_stats = {
+        'trips': len(year_trips),
+        'countries': len(set([t.destination for t in year_trips])),
+        'total_days': sum([(t.end_date - t.start_date).days + 1 for t in year_trips])
+    }
+
+    return render_template('achievements.html',
+                           unlocked=unlocked,
+                           locked=locked,
+                           user_level=user_level,
+                           trips_count=trips_count,
+                           progress=progress,
+                           year_stats=year_stats,
+                           current_year=current_year,
+                           total_achievements=len(ACHIEVEMENTS))
 
 
 @app.route('/trip/<int:trip_id>')
@@ -645,12 +1029,18 @@ def view_trip(trip_id):
     # Сортуємо дати
     activities_by_day = dict(sorted(activities_by_day.items()))
 
+    # Отримуємо погоду
+    city, country = parse_city_country(trip.destination)
+    weather = get_weather(city, country)
+    weather_forecast = get_weather_forecast(city, country, days=7)
+
     return render_template('trip_view.html',
                            trip=trip,
                            activities_by_day=activities_by_day,
                            currency_rates=CURRENCY_RATES,
-                           currency_symbols=CURRENCY_SYMBOLS)
-
+                           currency_symbols=CURRENCY_SYMBOLS,
+                           weather=weather,
+                           weather_forecast=weather_forecast)
 
 # Зберегти поїздку як шаблон
 @app.route('/trip/<int:trip_id>/save-as-template', methods=['GET', 'POST'])
@@ -1298,6 +1688,19 @@ class TripChecklist(db.Model):
 
     def __repr__(self):
         return f'<TripChecklist {self.item}>'
+
+
+# Досягнення користувача
+class UserAchievement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    achievement_type = db.Column(db.String(50), nullable=False)  # badge_first_trip, badge_5_trips тощо
+    unlocked_at = db.Column(db.DateTime, default=datetime.now)
+
+    user = db.relationship('User', backref='achievements')
+
+    def __repr__(self):
+        return f'<Achievement {self.achievement_type}>'
 
 # Видалити шаблон
 @app.route('/templates/<int:template_id>/delete', methods=['POST'])
