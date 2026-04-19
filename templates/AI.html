@@ -499,6 +499,24 @@ function autoResize(el) {
 
 init();
 </script>
+<!-- Floating AI Button -->
+<div id="ai-button" onclick="toggleAI()">
+  🤖
+</div>
 
+<!-- AI Chat Widget -->
+<div id="ai-widget">
+  <div id="ai-header">
+    🌍 Travel AI
+    <span onclick="toggleAI()" style="cursor:pointer;">✖</span>
+  </div>
+
+  <div id="ai-messages"></div>
+
+  <div id="ai-input-area">
+    <input id="ai-input" placeholder="Запитай про подорож..." />
+    <button onclick="sendAI()">➤</button>
+  </div>
+</div>
 </body>
 </html>

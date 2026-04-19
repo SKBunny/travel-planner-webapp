@@ -202,3 +202,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 console.log('Drag & Drop initialized');
+
+function toggleAI() {
+  const widget = document.getElementById("ai-widget");
+  widget.style.display = widget.style.display === "flex" ? "none" : "flex";
+}
+
+async function sendAI() {
+  const input = document.getElementById("ai-input");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const messagesBox = document.getElementById("ai-messages");
+
+  messagesBox.innerHTML += `<div><b>Ти:</b> ${text}</div>`;
+  input.value = "";
+
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text })
+  });
+
+  const data = await res.json();
+
+  messagesBox.innerHTML += `<div><b>AI:</b> ${data.reply}</div>`;
+  messagesBox.scrollTop = messagesBox.scrollHeight;
+}
