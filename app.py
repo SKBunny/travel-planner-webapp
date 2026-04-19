@@ -12,7 +12,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, session
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, session, jsonify
 from flask import send_from_directory
 import requests
 from dotenv import load_dotenv
@@ -3269,6 +3269,43 @@ def delete_account():
     flash('Ваш акаунт було видалено', 'info')
     return redirect(url_for('index'))
 
+
+@app.route("/api/ai", methods=["POST"])
+def ai():
+    user_message = request.json.get("message")
+
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": "Ти travel-асистент. Допомагаєш планувати подорожі, маршрути, даєш поради по містах, створюєш плани по днях."
+            },
+            {
+                "role": "user",
+                "content": user_message
+            }
+        ]
+    }
+
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers=headers,
+        json=data
+    )
+
+    result = response.json()
+
+    return jsonify({
+        "reply": result["choices"][0]["message"]["content"]
+    })
 # ============= ЗАПУСК ДОДАТКУ =============
 
 if __name__ == '__main__':
