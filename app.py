@@ -12,11 +12,12 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, send_from_directory, session, jsonify, render_template
 from flask import send_from_directory
 import requests
 from dotenv import load_dotenv
 import os
+import google.generativeai as genai
 
 # Завантажуємо змінні середовища
 load_dotenv()
@@ -3270,42 +3271,51 @@ def delete_account():
     return redirect(url_for('index'))
 
 
+@app.route("/ai")
+def ai_page():
+    return render_template("AI.html")
+
+# Налаштування Gemini (можна винести за межі маршруту)
+GEMINI_API_KEY = "AIzaSyAEXJr8mU_GLhcflCzzCsdf4spaBUyjb98"
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Вибираємо модель (flash — найшвидша і безкоштовна)
+model = genai.GenerativeModel(
+    model_name="gemini-2.5-flash-lite", # Lite версія значно швидша
+    system_instruction= (
+    "Ти — 'TravelAI', персональний інтелектуальний travel-асистент. "
+    "Твій стиль: привітний, натхненний, але лаконічний. "
+    "Твої правила:\n"
+    "1. Відповідай українською мовою.\n"
+    "2. Форматуй відповіді: використовуй жирний текст для назв локацій та марковані списки для маршрутів.\n"
+    "3. Якщо користувач питає про подорож з України, враховуй сучасні логістичні реалії (автобуси, поїзди до Перемишля/Варшави, вильоти з найближчих аеропортів сусідніх країн).\n"
+    "4. Завжди додавай одну цікаву 'фішку' про місце (наприклад, секретний дворик або найкращу каву).\n"
+)
+)
+
+
 @app.route("/api/ai", methods=["POST"])
 def ai():
-    user_message = request.json.get("message")
+    try:
+        user_message = request.json.get("message")
 
-    api_key = os.getenv("OPENAI_API_KEY")
+        if not GEMINI_API_KEY:
+            return jsonify({"reply": "❌ Немає API ключа"}), 500
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+        if not user_message:
+            return jsonify({"reply": "❌ Повідомлення порожнє"}), 400
 
-    data = {
-        "model": "gpt-4o-mini",
-        "messages": [
-            {
-                "role": "system",
-                "content": "Ти travel-асистент. Допомагаєш планувати подорожі, маршрути, даєш поради по містах, створюєш плани по днях."
-            },
-            {
-                "role": "user",
-                "content": user_message
-            }
-        ]
-    }
+        # Генерація відповіді
+        response = model.generate_content(user_message)
 
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions",
-        headers=headers,
-        json=data
-    )
+        # Gemini повертає відповідь у полі .text
+        return jsonify({
+            "reply": response.text
+        })
 
-    result = response.json()
-
-    return jsonify({
-        "reply": result["choices"][0]["message"]["content"]
-    })
+    except Exception as e:
+        print("GEMINI ERROR:", e)
+        return jsonify({"reply": f"⚠️ Помилка сервера: {str(e)}"}), 500
 # ============= ЗАПУСК ДОДАТКУ =============
 
 if __name__ == '__main__':
@@ -3316,3 +3326,5 @@ if __name__ == '__main__':
 
     # Запуск сервера
     app.run(debug=True, host='0.0.0.0', port=5001)
+
+    

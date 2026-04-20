@@ -208,24 +208,30 @@ function toggleAI() {
   widget.style.display = widget.style.display === "flex" ? "none" : "flex";
 }
 
-async function sendAI() {
-  const input = document.getElementById("ai-input");
-  const text = input.value.trim();
-  if (!text) return;
+async function send() {
+    const input = document.getElementById("input");
+    const text = input.value.trim();
 
-  const messagesBox = document.getElementById("ai-messages");
+    if (!text) return;
 
-  messagesBox.innerHTML += `<div><b>Ти:</b> ${text}</div>`;
-  input.value = "";
+    addMessage(text, "user");
+    input.value = "";
 
-  const res = await fetch("/api/ai", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: text })
-  });
+    try {
+        const res = await fetch("/api/ai", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message: text})
+        });
 
-  const data = await res.json();
+        const data = await res.json();
 
-  messagesBox.innerHTML += `<div><b>AI:</b> ${data.reply}</div>`;
-  messagesBox.scrollTop = messagesBox.scrollHeight;
+        if (!data.reply) throw new Error("Немає відповіді");
+
+        addMessage(data.reply, "bot");
+
+    } catch (err) {
+        addMessage("⚠️ Помилка: " + err.message, "bot");
+        console.error(err);
+    }
 }
