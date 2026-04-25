@@ -14,8 +14,8 @@
 </h2>
 
 <!-- Основні показники -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
+<div class="row mb-3">
+    <div class="col-12 col-md-4 mb-3">
         <div class="card stat-card bg-primary text-white">
             <div class="card-body text-center">
                 <i class="bi bi-wallet2 stat-icon"></i>
@@ -25,17 +25,17 @@
         </div>
     </div>
 
-   <div class="col-md-3 mb-3">
-    <div class="card stat-card bg-danger text-white">
-        <div class="card-body text-center">
-            <i class="bi bi-cash-stack stat-icon"></i>
-            <h3 class="mb-1">{{ "%.2f"|format(total_spent) }} грн</h3>
-            <p class="mb-0">Витрачено</p>
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-cash-stack stat-icon"></i>
+                <h3 class="mb-1">{{ "%.2f"|format(total_spent) }} грн</h3>
+                <p class="mb-0">Витрачено</p>
+            </div>
         </div>
     </div>
-</div>
 
-    <div class="col-md-3 mb-3">
+    <div class="col-md-4 mb-3">
         <div class="card stat-card {% if remaining_budget >= 0 %}bg-success{% else %}bg-warning{% endif %} text-white">
             <div class="card-body text-center">
                 <i class="bi bi-piggy-bank stat-icon"></i>
@@ -44,18 +44,7 @@
             </div>
         </div>
     </div>
-
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card bg-info text-white">
-            <div class="card-body text-center">
-                <i class="bi bi-percent stat-icon"></i>
-                <h3 class="mb-1">{{ "%.1f"|format(budget_percentage) }}%</h3>
-                <p class="mb-0">Використано бюджету</p>
-            </div>
-        </div>
-    </div>
 </div>
-
 <!-- Прогрес використання бюджету -->
 <div class="card shadow-sm mb-4">
     <div class="card-body">
@@ -108,34 +97,7 @@
     </div>
 </div>
 
-<!-- Прогрес виконання активностей -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h5 class="mb-3"><i class="bi bi-check-circle"></i> Виконання активностей</h5>
-        <div class="row">
-            <div class="col-md-6">
-                <p class="mb-2">
-                    Виконано: <strong>{{ completed_count }} з {{ activities_count }}</strong>
-                </p>
-                <div class="progress" style="height: 25px;">
-                    <div class="progress-bar bg-success"
-                         role="progressbar"
-                         style="width: {{ completion_rate }}%">
-                        {{ "%.0f"|format(completion_rate) }}%
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <p class="mb-2">
-                    Забронованих готелів: <strong>{{ accommodations_count }}</strong>
-                </p>
-                <p class="mb-0 text-muted">
-                    Загальна вартість проживання: <strong>{{ "%.2f"|format(total_accommodation_cost) }} грн</strong>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- Детальна таблиця витрат -->
 <div class="card shadow-sm">

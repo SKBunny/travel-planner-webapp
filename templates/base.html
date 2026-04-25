@@ -87,12 +87,6 @@
                             <span>Карта світу</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-custom d-flex align-items-center" href="{{ url_for('ai_page') }}">
-                            <i class="bi bi-robot me-1"></i>
-                        <span>AI Асистент</span>
-                        </a>
-                    </li>
                     <!-- Dropdown користувача -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle nav-link-custom d-flex align-items-center"
@@ -109,6 +103,12 @@
                                 <a class="dropdown-item d-flex align-items-center" href="{{ url_for('user_profile') }}">
                                     <i class="bi bi-person me-2"></i>
                                     <span>Профіль</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom d-flex align-items-center" href="{{ url_for('ai_page') }}">
+                                    <i class="bi bi-robot me-1"></i>
+                                    <span>AI Асистент</span>
                                 </a>
                             </li>
                             <li>

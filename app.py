@@ -1638,7 +1638,6 @@ def export_trip_pdf(trip_id):
         alignment=TA_CENTER,
         spaceAfter=20
     )
-    elements.append(Paragraph("✈", icon_style))
     elements.append(Paragraph(trip.title, title_style))
 
     subtitle_text = f"{trip.destination}"
@@ -1943,8 +1942,6 @@ def export_trip_pdf(trip_id):
         alignment=TA_CENTER
     )
 
-    footer_text = f"Створено в Travel Planner • {datetime.now().strftime('%d.%m.%Y')} • Гарних подорожей! ✈"
-    elements.append(Paragraph(footer_text, footer_style))
 
     # Генеруємо PDF
     doc.build(elements)
@@ -3276,7 +3273,7 @@ def ai_page():
     return render_template("AI.html")
 
 # Налаштування Gemini (можна винести за межі маршруту)
-GEMINI_API_KEY = "AIzaSyAEXJr8mU_GLhcflCzzCsdf4spaBUyjb98"
+GEMINI_API_KEY = "AIzaSyCURym2NyxW_A6uuhdRmclj2AucD1dTQTM"
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Вибираємо модель (flash — найшвидша і безкоштовна)

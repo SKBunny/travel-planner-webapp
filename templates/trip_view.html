@@ -70,18 +70,6 @@
                         ≈ {{ "%.2f"|format(trip.budget * currency_rates[trip.currency]) }} ₴
                     </small>
                 {% endif %}
-
-                {% if trip.activities %}
-                    {% set total_spent = trip.activities|sum(attribute='cost') %}
-                    <small class="text-muted d-block mt-2">
-                        Витрачено: {{ "%.2f"|format(total_spent) }} грн
-                    </small>
-                    {% if total_spent > (trip.budget * currency_rates[trip.currency]) %}
-                        <small class="text-danger d-block">
-                            Перевищення на {{ "%.2f"|format(total_spent - (trip.budget * currency_rates[trip.currency])) }} грн
-                        </small>
-                    {% endif %}
-                {% endif %}
             </div>
         </div>
     </div>
